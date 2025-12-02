@@ -4,6 +4,7 @@ import com.osman.questionservice.model.Question;
 import com.osman.questionservice.model.QuestionWrapper;
 import com.osman.questionservice.model.Response;
 import com.osman.questionservice.repo.QuestionRepo;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,32 +22,32 @@ public class QuestionService {
         this.questionRepo = questionRepo;
     }
 
-    public ResponseEntity<List<Question>> getAllQuestions() {
-        return new ResponseEntity<>(questionRepo.findAll(), HttpStatus.OK);
+    public List<Question> getAllQuestions() {
+        return questionRepo.findAll();
     }
 
-    public ResponseEntity<List<Question>> getQuestionsByCategory(String category) {
-        return new ResponseEntity<>(questionRepo.findByCategory(category), HttpStatus.OK);
+    public List<Question> getQuestionsByCategory(String category) {
+        return questionRepo.findByCategory(category);
     }
 
-    public ResponseEntity<String> addQuestion(Question question) {
+    public String addQuestion(Question question) {
         questionRepo.save(question);
-        return new ResponseEntity<>("Question added", HttpStatus.CREATED);
+        return "Question added successfully.";
     }
 
-    public ResponseEntity<String> deleteQuestion(int id) {
+    public String deleteQuestion(int id) {
         questionRepo.deleteById(id);
-        return new ResponseEntity<>("Question deleted", HttpStatus.OK);
+        return "Question deleted successfully.";
     }
 
-    public ResponseEntity<String> updateQuestion(int id, Question updatedQuestion) {
+    public String updateQuestion(int id, Question updatedQuestion) {
         Optional<Question> optionalQuestion = questionRepo.findById(id);
         if (optionalQuestion.isPresent()) {
             Question existingQuestion = getQuestion(updatedQuestion, optionalQuestion);
             questionRepo.save(existingQuestion);
-            return ResponseEntity.ok("Question updated successfully.");
+            return "Question updated successfully.";
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Question not found.");
+            return "Question not found.";
         }
     }
 
@@ -78,15 +79,14 @@ public class QuestionService {
         return existingQuestion;
     }
 
-    public ResponseEntity<List<Integer>> getQuestionForService(String category, int numOfQuestions) {
+    public List<Integer> getQuestionForService(String category, int numOfQuestions) {
 
-        List<Integer> questions = questionRepo.getRandomQuestionsByCategory(category, numOfQuestions);
 
-        return new ResponseEntity<>(questions, HttpStatus.OK);
+        return questionRepo.getRandomQuestionsByCategory(category, numOfQuestions);
 
     }
 
-    public ResponseEntity<List<QuestionWrapper>> getQuestionsFromId(List<Integer> questionIds) {
+    public List<QuestionWrapper> getQuestionsFromId(List<Integer> questionIds) {
         List<QuestionWrapper> wrappers = new ArrayList<>();
         List<Question> questions = new ArrayList<>();
 
@@ -104,11 +104,11 @@ public class QuestionService {
             wrapper.setOption4(question.getOption4());
             wrappers.add(wrapper);
         }
-        return new ResponseEntity<>(wrappers, HttpStatus.OK);
+        return wrappers;
     }
 
 
-    public ResponseEntity<Integer> getScore(List<Response> responses) {
+    public Integer getScore(List<Response> responses) {
         int right = 0;
         for (Response r : responses) {
             Question question = questionRepo.findById(r.getId()).get();
@@ -116,6 +116,8 @@ public class QuestionService {
                 right++;
             }
         }
-        return new ResponseEntity<>(right, HttpStatus.OK);
+        return right;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package com.osman.quizservice.service;
 
+import com.netflix.discovery.converters.Auto;
 import com.osman.quizservice.feign.QuizInterface;
 import com.osman.quizservice.model.QuestionWrapper;
 import com.osman.quizservice.model.Quiz;
@@ -24,15 +25,16 @@ import java.util.List;
 
     private final QuizInterface quizInterface;
 
-    public QuizService(QuizRepo quizRepo,QuizInterface quizInterface) {
-        this.quizRepo = quizRepo;
-        this.quizInterface = quizInterface;
-    }
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
 
     @Autowired
-    CircuitBreakerRegistry registry;
+    public QuizService(QuizRepo quizRepo, QuizInterface quizInterface, CircuitBreakerRegistry circuitBreakerRegistry) {
+        this.quizRepo = quizRepo;
+        this.quizInterface = quizInterface;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+    }
 
-    public ResponseEntity<String> createQuiz(String category, String title, int numOfQuestions) {
+    public String createQuiz(String category, String title, int numOfQuestions) {
 
         List<Integer> questionIds = quizInterface.getQuestionsForQuiz(category,numOfQuestions).getBody();
 
@@ -41,31 +43,31 @@ import java.util.List;
         quiz.setQuestionIds(questionIds);
         quizRepo.save(quiz);
 
-        return new ResponseEntity<>("Success", HttpStatus.CREATED);
+        return "Success";
     }
 
 
-    public ResponseEntity<List<QuestionWrapper>> getQuestionsForQuiz(int id) {
+    public List<QuestionWrapper> getQuestionsForQuiz(int id) {
 
         Quiz quiz=quizRepo.findById(id).get();
 
         List<QuestionWrapper> questionForUsers=quizInterface.getQuestionsFromId(quiz.getQuestionIds()).getBody();
 
-        return new ResponseEntity<>(questionForUsers, HttpStatus.OK);
+        return questionForUsers;
 
     }
 
         @CircuitBreaker(name = "scoreCB", fallbackMethod = "getScoreFallback")
-        public ResponseEntity<Integer> calculateResult(List<Response> responses) {
+        public Integer calculateResult(List<Response> responses) {
 
-            System.out.println(registry.circuitBreaker("scoreCB").getState().name());
+            System.out.println(circuitBreakerRegistry.circuitBreaker("scoreCB").getState().name());
             Integer right=quizInterface.getScore(responses).getBody();
 
-            return new ResponseEntity<>(right, HttpStatus.OK);
+            return right;
         }
 
         public ResponseEntity<Integer> getScoreFallback(List<Response> responses, Throwable ex){
-            System.out.println(registry.circuitBreaker("scoreCB").getState().name());
+            System.out.println(circuitBreakerRegistry.circuitBreaker("scoreCB").getState().name());
             return new ResponseEntity<>(-2,HttpStatus.SERVICE_UNAVAILABLE);
         }
 }
