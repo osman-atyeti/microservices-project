@@ -1,0 +1,39 @@
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+resilience4j:
+  circuitbreaker:
+    instances:
+      scoreCB:
+        failure-rate-threshold: 50
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        wait-duration-in-open-state: 10s
+server:
+  port: 8090
+spring:
+  application:
+    name: quiz-service
+  cloud:
+    gateway:
+      routes:
+        -   filters:
+              - RewritePath=/quiz/(?<remaining>.*), /${remaining}
+            id: quiz-service-route
+            predicates:
+              - Path=/quiz/**
+            uri: http://localhost:8081
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: root@12345
+    url: jdbc:mysql://localhost:3306/quiz_service
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: true
