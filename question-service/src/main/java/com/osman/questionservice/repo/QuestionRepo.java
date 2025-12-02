@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface QuestionRepo extends JpaRepository<Question, Integer> {
+public interface QuestionRepo extends JpaRepository<Question, Integer>, QuestionRepositoryCustom {
 
     List<Question> findByCategory(String category);
 

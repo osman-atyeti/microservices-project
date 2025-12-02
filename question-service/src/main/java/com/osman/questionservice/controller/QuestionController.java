@@ -84,5 +84,13 @@ public class QuestionController {
         return new ResponseEntity<>(pagedQuestions, HttpStatus.OK);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Question>> searchQuestions(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(questionService.searchQuestions(category, keyword));
+    }
+
+
 
 }

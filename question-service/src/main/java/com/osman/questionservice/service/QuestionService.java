@@ -130,4 +130,8 @@ public class QuestionService {
         Page<Question> all = questionRepo.findAll(PageRequest.of(pageNo, pageSize));
         return all.getContent();
     }
+
+    public List<Question> searchQuestions(String category, String keyword) {
+        return questionRepo.search(category, keyword);
+    }
 }
