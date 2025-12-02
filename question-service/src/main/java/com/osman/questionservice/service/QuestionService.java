@@ -4,6 +4,9 @@ import com.osman.questionservice.model.Question;
 import com.osman.questionservice.model.QuestionWrapper;
 import com.osman.questionservice.model.Response;
 import com.osman.questionservice.repo.QuestionRepo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -119,5 +122,12 @@ public class QuestionService {
         return right;
     }
 
+    public List<Question> getSortedQuestions(String sortBy) {
+        return questionRepo.findAll(Sort.by(Sort.Direction.ASC, sortBy));
+    }
 
+    public List<Question> getPagedQuestions(int pageNo, int pageSize) {
+        Page<Question> all = questionRepo.findAll(PageRequest.of(pageNo, pageSize));
+        return all.getContent();
+    }
 }

@@ -72,4 +72,17 @@ public class QuestionController {
         return new ResponseEntity<>(questionService.getScore(responses), HttpStatus.OK);
     }
 
+    @GetMapping("/sorted")
+    public ResponseEntity<List<Question>> getSortedQuestions(@RequestParam String sortBy) {
+        List<Question> sortedQuestions = questionService.getSortedQuestions(sortBy);
+        return new ResponseEntity<>(sortedQuestions, HttpStatus.OK);
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<List<Question>> getPagedQuestions(@RequestParam int pageNo, @RequestParam int pageSize) {
+        List<Question> pagedQuestions = questionService.getPagedQuestions(pageNo, pageSize);
+        return new ResponseEntity<>(pagedQuestions, HttpStatus.OK);
+    }
+
+
 }
