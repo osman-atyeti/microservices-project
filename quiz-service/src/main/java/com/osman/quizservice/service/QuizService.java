@@ -1,6 +1,6 @@
 package com.osman.quizservice.service;
 
-import com.netflix.discovery.converters.Auto;
+import com.osman.quizservice.exception.QuizNotFoundException;
 import com.osman.quizservice.feign.QuizInterface;
 import com.osman.quizservice.model.QuestionWrapper;
 import com.osman.quizservice.model.Quiz;
@@ -10,13 +10,11 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
     public class QuizService {
@@ -49,9 +47,13 @@ import java.util.List;
 
     public List<QuestionWrapper> getQuestionsForQuiz(int id) {
 
-        Quiz quiz=quizRepo.findById(id).get();
+        Optional<Quiz> quiz=quizRepo.findById(id);
 
-        List<QuestionWrapper> questionForUsers=quizInterface.getQuestionsFromId(quiz.getQuestionIds()).getBody();
+        if (quiz.isEmpty()) {
+            throw new QuizNotFoundException("Quiz with ID " + id + " not found");
+        }
+
+        List<QuestionWrapper> questionForUsers=quizInterface.getQuestionsFromId(quiz.get().getQuestionIds()).getBody();
 
         return questionForUsers;
 

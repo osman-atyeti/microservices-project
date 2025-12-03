@@ -16,15 +16,6 @@ server:
 spring:
   application:
     name: quiz-service
-  cloud:
-    gateway:
-      routes:
-        -   filters:
-              - RewritePath=/quiz/(?<remaining>.*), /${remaining}
-            id: quiz-service-route
-            predicates:
-              - Path=/quiz/**
-            uri: http://localhost:8081
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: root@12345
