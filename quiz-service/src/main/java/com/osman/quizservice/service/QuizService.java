@@ -1,5 +1,6 @@
 package com.osman.quizservice.service;
 
+import com.osman.quizservice.exception.InvalidQuizDataException;
 import com.osman.quizservice.exception.QuizNotFoundException;
 import com.osman.quizservice.feign.QuizInterface;
 import com.osman.quizservice.model.QuestionWrapper;
@@ -33,6 +34,9 @@ import java.util.Optional;
     }
 
     public String createQuiz(String category, String title, int numOfQuestions) {
+        if (category == null || title == null || numOfQuestions <= 0) {
+            throw new InvalidQuizDataException("Invalid quiz data provided");
+        }
 
         List<Integer> questionIds = quizInterface.getQuestionsForQuiz(category,numOfQuestions).getBody();
 
@@ -61,6 +65,9 @@ import java.util.Optional;
 
         @CircuitBreaker(name = "scoreCB", fallbackMethod = "getScoreFallback")
         public Integer calculateResult(List<Response> responses) {
+            if (responses == null || responses.isEmpty()) {
+                throw new InvalidQuizDataException("Quiz responses cannot be null or empty");
+            }
 
             System.out.println(circuitBreakerRegistry.circuitBreaker("scoreCB").getState().name());
             Integer right=quizInterface.getScore(responses).getBody();
@@ -68,8 +75,8 @@ import java.util.Optional;
             return right;
         }
 
-        public ResponseEntity<Integer> getScoreFallback(List<Response> responses, Throwable ex){
+        public Integer getScoreFallback(List<Response> responses, Throwable ex){
             System.out.println(circuitBreakerRegistry.circuitBreaker("scoreCB").getState().name());
-            return new ResponseEntity<>(-2,HttpStatus.SERVICE_UNAVAILABLE);
+            return -1;
         }
 }

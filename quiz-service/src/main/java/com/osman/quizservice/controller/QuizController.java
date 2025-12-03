@@ -30,9 +30,6 @@ public class QuizController {
 
     @GetMapping("/create")
     public ResponseEntity<String> createQuiz(@RequestParam String category, @RequestParam String title, @RequestParam int numOfQuestions){
-        if (category == null || title == null || numOfQuestions <= 0) {
-            throw new InvalidQuizDataException("Invalid quiz data provided");
-        }
         return new ResponseEntity<>(quizService.createQuiz(category, title, numOfQuestions), HttpStatus.OK);
     }
 
@@ -43,10 +40,12 @@ public class QuizController {
 
     @PostMapping("/submit")
     public ResponseEntity<Integer> submitQuiz(@RequestBody List<Response> responses){
-        if (responses == null || responses.isEmpty()) {
-            throw new InvalidQuizDataException("Quiz responses cannot be null or empty");
+
+        Integer result=quizService.calculateResult(responses);
+        if (result == -1) {
+            return new ResponseEntity<>(-1,HttpStatus.SERVICE_UNAVAILABLE);
         }
-        return new ResponseEntity<>(quizService.calculateResult(responses), HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 
