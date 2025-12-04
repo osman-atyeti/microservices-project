@@ -1,5 +1,6 @@
 package com.osman.quizservice.controller;
 
+import com.osman.quizservice.exception.InvalidQuizDataException;
 import com.osman.quizservice.model.QuestionWrapper;
 import com.osman.quizservice.model.Response;
 import com.osman.quizservice.service.QuizService;
@@ -29,7 +30,7 @@ public class QuizController {
 
     @GetMapping("/create")
     public ResponseEntity<String> createQuiz(@RequestParam String category, @RequestParam String title, @RequestParam int numOfQuestions){
-        return new ResponseEntity<>(quizService.createQuiz(category,title,numOfQuestions), HttpStatus.OK);
+        return new ResponseEntity<>(quizService.createQuiz(category, title, numOfQuestions), HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
@@ -39,7 +40,12 @@ public class QuizController {
 
     @PostMapping("/submit")
     public ResponseEntity<Integer> submitQuiz(@RequestBody List<Response> responses){
-        return new ResponseEntity<>(quizService.calculateResult(responses), HttpStatus.OK);
+
+        Integer result=quizService.calculateResult(responses);
+        if (result == -1) {
+            return new ResponseEntity<>(-1,HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 
